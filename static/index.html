@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="GEO Visibility Scanner — check if AI models can find your brand" />
+  <title>GEO Visibility Scanner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            surface: { DEFAULT: '#0a0a0b', elevated: '#111113', border: '#1f1f23' },
+            accent: { DEFAULT: '#6366f1', muted: '#818cf8' },
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-up': 'slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    html { color-scheme: dark; }
+    .ring-focus:focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0a0b, 0 0 0 4px #6366f1; }
+    .score-ring { transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1); }
+  </style>
+</head>
+<body class="h-full min-h-screen bg-[#050506] text-zinc-100 antialiased selection:bg-indigo-500/30 selection:text-white">
+  <!-- Replace href with your portfolio URL -->
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-indigo-600 focus:px-3 focus:py-2 focus:text-sm focus:text-white">Skip to content</a>
+
+  <div class="pointer-events-none fixed inset-0 overflow-hidden">
+    <div class="absolute -left-32 top-0 h-96 w-96 rounded-full bg-indigo-600/15 blur-[100px]"></div>
+    <div class="absolute right-0 top-1/3 h-80 w-80 rounded-full bg-violet-500/10 blur-[90px]"></div>
+    <div class="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-teal-500/10 blur-[80px]"></div>
+  </div>
+
+  <div class="relative mx-auto flex min-h-full max-w-5xl flex-col px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+    <header class="mb-12 flex flex-col gap-6 sm:mb-16 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25" aria-hidden="true">
+          <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <p class="text-xs font-medium uppercase tracking-widest text-zinc-500">GEO</p>
+          <p class="text-sm font-semibold text-zinc-200">Visibility Scanner</p>
+        </div>
+      </div>
+      <p class="text-xs text-zinc-500 sm:text-right">Runs against your FastAPI backend · same-origin</p>
+    </header>
+
+    <main id="main" class="flex-1">
+      <!-- Hero -->
+      <section class="animate-fade-in rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-10" aria-labelledby="hero-title">
+        <h1 id="hero-title" class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">GEO Visibility Scanner</h1>
+        <p class="mt-3 max-w-xl text-base text-zinc-400">Check if AI models can find your brand</p>
+
+        <form id="scan-form" class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-3" novalidate>
+          <div class="flex-1 space-y-2">
+            <label for="brand" class="block text-xs font-medium uppercase tracking-wider text-zinc-500">Brand name</label>
+            <input id="brand" name="brand" type="text" required autocomplete="organization" placeholder="AcmeProject" class="ring-focus w-full rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-4 py-3 text-sm text-white placeholder:text-zinc-600 transition-colors hover:border-zinc-600 focus:border-indigo-500/60" />
+          </div>
+          <div class="flex-[1.2] space-y-2">
+            <label for="url" class="block text-xs font-medium uppercase tracking-wider text-zinc-500">Website URL</label>
+            <input id="url" name="url" type="url" required inputmode="url" placeholder="https://acmeproject.com" class="ring-focus w-full rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-4 py-3 text-sm text-white placeholder:text-zinc-600 transition-colors hover:border-zinc-600 focus:border-indigo-500/60" />
+          </div>
+          <button type="submit" id="scan-btn" class="ring-focus inline-flex h-[46px] shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6 sm:h-[46px]">
+            <span id="scan-btn-text">Scan Now</span>
+            <svg id="scan-spinner" class="hidden h-4 w-4 animate-spin text-zinc-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          </button>
+        </form>
+
+        <div id="error-banner" class="mt-4 hidden rounded-xl border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-200 transition-opacity" role="alert"></div>
+      </section>
+
+      <!-- Results + Playbook (hidden until data) -->
+      <div id="results-region" class="mt-10 hidden space-y-10" aria-live="polite">
+        <!-- Results panel -->
+        <section class="rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 backdrop-blur-sm sm:p-8" aria-labelledby="results-heading">
+          <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h2 id="results-heading" class="text-lg font-semibold text-white">Scan results</h2>
+              <p id="results-meta" class="mt-1 font-mono text-xs text-zinc-500"></p>
+            </div>
+            <div class="flex flex-wrap gap-2" id="exclusion-badges" aria-label="Exclusion points"></div>
+          </div>
+
+          <div class="mt-8 flex flex-col items-center gap-8 sm:flex-row sm:items-center sm:gap-12">
+            <div class="relative shrink-0" aria-label="GEO score">
+              <svg class="h-40 w-40 -rotate-90 transform" viewBox="0 0 120 120" aria-hidden="true">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" class="text-zinc-800" stroke-width="8" />
+                <circle id="score-ring" class="score-ring text-indigo-500" cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="score-value" class="text-4xl font-bold tabular-nums tracking-tight text-white">0</span>
+                <span id="grade-badge" class="mt-0.5 rounded-md bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-300">—</span>
+              </div>
+            </div>
+            <div class="min-w-0 flex-1 space-y-2 text-center sm:text-left">
+              <p class="text-sm text-zinc-400">Overall GEO visibility score based on entity signals, structured data, crawlability, and on-page hints.</p>
+              <p id="brand-url-line" class="truncate font-mono text-xs text-zinc-500"></p>
+            </div>
+          </div>
+
+          <div class="mt-10 space-y-3" id="checks-accordion"></div>
+        </section>
+
+        <!-- Playbook -->
+        <section class="rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 backdrop-blur-sm sm:p-8" aria-labelledby="playbook-heading">
+          <h2 id="playbook-heading" class="text-lg font-semibold text-white">Remediation playbook</h2>
+          <p class="mt-1 text-sm text-zinc-500">Priority-ordered actions. Expand each card for the full checklist.</p>
+          <div id="playbook-list" class="mt-6 space-y-3"></div>
+        </section>
+      </div>
+
+      <!-- Demo -->
+      <section class="mt-14 animate-slide-up rounded-2xl border border-zinc-800/60 bg-zinc-900/20 p-6 sm:p-8" aria-labelledby="demo-heading">
+        <h2 id="demo-heading" class="text-base font-semibold text-white">Try these demo brands</h2>
+        <p class="mt-1 text-sm text-zinc-500">Pre-loaded results — no wait. Great for demos and UI testing.</p>
+        <div id="demo-chips" class="mt-4 flex flex-wrap gap-2" role="list"></div>
+      </section>
+    </main>
+
+    <footer class="mt-16 border-t border-zinc-800/80 pt-8 text-center text-sm text-zinc-500">
+      <p>Built with Cursor + Claude in 48 hours</p>
+      <p class="mt-2">
+        <a href="https://example.com" class="text-zinc-400 underline decoration-zinc-600 underline-offset-4 transition hover:text-indigo-400 hover:decoration-indigo-500/50" rel="noopener noreferrer">Portfolio</a>
+        <span class="mx-2 text-zinc-700">·</span>
+        <a href="/health" class="text-zinc-400 underline decoration-zinc-600 underline-offset-4 transition hover:text-indigo-400 hover:decoration-indigo-500/50">API health</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var API_BASE = '';
+
+      var STORAGE_KEY = 'geo_last_scan_v1';
+
+      var EXCLUSION_LABELS = {
+        1: 'Not crawled',
+        2: 'Content quality',
+        3: 'Not tokenized',
+        4: 'Not learned',
+        5: 'Not in index',
+        6: 'Semantic mismatch',
+      };
+
+      /** P0 = critical (red badge), else warning (yellow) — mirrors backend playbook priorities */
+      var EXCLUSION_SEVERITY = { 1: 'critical', 2: 'warning', 3: 'critical', 4: 'warning', 5: 'critical', 6: 'warning' };
+
+      var GRADE_STYLES = {
+        A: { ring: 'text-emerald-400', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+        B: { ring: 'text-teal-400', badge: 'bg-teal-500/20 text-teal-300 border-teal-500/30' },
+        C: { ring: 'text-yellow-400', badge: 'bg-yellow-500/20 text-yellow-200 border-yellow-500/30' },
+        D: { ring: 'text-orange-400', badge: 'bg-orange-500/20 text-orange-200 border-orange-500/30' },
+        E: { ring: 'text-orange-500', badge: 'bg-orange-600/25 text-orange-200 border-orange-600/35' },
+        F: { ring: 'text-red-400', badge: 'bg-red-500/20 text-red-200 border-red-500/30' },
+      };
+
+      var els = {
+        form: document.getElementById('scan-form'),
+        brand: document.getElementById('brand'),
+        url: document.getElementById('url'),
+        scanBtn: document.getElementById('scan-btn'),
+        scanBtnText: document.getElementById('scan-btn-text'),
+        scanSpinner: document.getElementById('scan-spinner'),
+        errorBanner: document.getElementById('error-banner'),
+        resultsRegion: document.getElementById('results-region'),
+        scoreValue: document.getElementById('score-value'),
+        scoreRing: document.getElementById('score-ring'),
+        gradeBadge: document.getElementById('grade-badge'),
+        resultsMeta: document.getElementById('results-meta'),
+        brandUrlLine: document.getElementById('brand-url-line'),
+        exclusionBadges: document.getElementById('exclusion-badges'),
+        checksAccordion: document.getElementById('checks-accordion'),
+        playbookList: document.getElementById('playbook-list'),
+        demoChips: document.getElementById('demo-chips'),
+      };
+
+      var CIRC = 2 * Math.PI * 52;
+
+      function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function showError(msg) {
+        els.errorBanner.textContent = msg;
+        els.errorBanner.classList.remove('hidden');
+        els.errorBanner.classList.add('animate-fade-in');
+      }
+
+      function hideError() {
+        els.errorBanner.classList.add('hidden');
+        els.errorBanner.textContent = '';
+      }
+
+      function setLoading(loading) {
+        els.scanBtn.disabled = loading;
+        els.scanBtnText.textContent = loading ? 'Scanning…' : 'Scan Now';
+        els.scanSpinner.classList.toggle('hidden', !loading);
+      }
+
+      function gradeStyle(grade) {
+        return GRADE_STYLES[grade] || GRADE_STYLES.F;
+      }
+
+      function animateScore(target, grade, durationMs) {
+        var start = performance.now();
+        var from = 0;
+        els.scoreRing.style.strokeDasharray = String(CIRC);
+        els.scoreRing.style.strokeDashoffset = String(CIRC);
+        els.scoreRing.setAttribute('class', 'score-ring ' + gradeStyle(grade).ring);
+
+        function frame(now) {
+          var t = Math.min(1, (now - start) / durationMs);
+          var eased = 1 - Math.pow(1 - t, 3);
+          var val = Math.round(from + (target - from) * eased);
+          els.scoreValue.textContent = String(val);
+          var offset = CIRC * (1 - (target / 100) * eased);
+          els.scoreRing.style.strokeDashoffset = String(offset);
+          if (t < 1) requestAnimationFrame(frame);
+          else {
+            els.scoreValue.textContent = String(target);
+            els.scoreRing.style.strokeDashoffset = String(CIRC * (1 - target / 100));
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      function knowledgeGraphStatus(c) {
+        if (!c) return { label: 'Not found', tone: 'bad', icon: '❌' };
+        if (c.rate_limited) return { label: 'Estimated (rate limit)', tone: 'warn', icon: '⚠️' };
+        if (c.found) return { label: 'Found', tone: 'ok', icon: '✅' };
+        return { label: 'Not found', tone: 'bad', icon: '❌' };
+      }
+
+      function schemaStatus(c) {
+        if (!c) return { label: 'Missing', tone: 'bad', icon: '❌', detail: '' };
+        var has = !!c.has_schema;
+        var errs = Array.isArray(c.errors) ? c.errors.length : 0;
+        if (has && errs === 0) return { label: 'Valid', tone: 'ok', icon: '✅', detail: '' };
+        if (has && errs > 0) return { label: 'Partial', tone: 'warn', icon: '⚠️', detail: (c.errors || []).join(' · ') };
+        return { label: 'Missing', tone: 'bad', icon: '❌', detail: (c.errors || []).join(' · ') };
+      }
+
+      function wikidataStatus(c) {
+        if (c && c.found) return { label: 'Found', tone: 'ok', icon: '✅' };
+        return { label: 'Not found', tone: 'bad', icon: '❌' };
+      }
+
+      function crawlabilityStatus(c) {
+        if (!c) return { label: 'Issues', tone: 'warn', icon: '⚠️', detail: '' };
+        var issues = Array.isArray(c.robots_issues) ? c.robots_issues : [];
+        if (!c.crawlable) return { label: 'Blocked', tone: 'bad', icon: '❌', detail: issues.join(' · ') };
+        if (issues.length === 0) return { label: 'Good', tone: 'ok', icon: '✅', detail: '' };
+        return { label: 'Issues', tone: 'warn', icon: '⚠️', detail: issues.join(' · ') };
+      }
+
+      var toneBadge = {
+        ok: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+        warn: 'text-amber-300 bg-amber-500/10 border-amber-500/25',
+        bad: 'text-red-300 bg-red-500/10 border-red-500/25',
+      };
+
+      function renderChecks(checks) {
+        checks = checks || {};
+        var kg = knowledgeGraphStatus(checks.knowledge_graph);
+        var sc = schemaStatus(checks.schema_markup);
+        var wd = wikidataStatus(checks.wikidata);
+        var cr = crawlabilityStatus(checks.crawlability);
+
+        var rows = [
+          {
+            id: 'check-kg',
+            title: 'Knowledge Graph',
+            status: kg,
+            body:
+              '<p class="text-sm text-zinc-400">' +
+              escapeHtml((checks.knowledge_graph && checks.knowledge_graph.description) || '—') +
+              '</p>' +
+              (checks.knowledge_graph && checks.knowledge_graph.confidence != null
+                ? '<p class="mt-2 font-mono text-xs text-zinc-500">Confidence: ' +
+                  escapeHtml(String(checks.knowledge_graph.confidence)) +
+                  (checks.knowledge_graph.kg_score_points != null
+                    ? ' · KG points (scoring): ' + escapeHtml(String(checks.knowledge_graph.kg_score_points))
+                    : '') +
+                  '</p>'
+                : ''),
+          },
+          {
+            id: 'check-schema',
+            title: 'Schema markup',
+            status: sc,
+            body:
+              '<p class="text-sm text-zinc-400">' +
+              (sc.detail ? escapeHtml(sc.detail) : checks.schema_markup && checks.schema_markup.has_schema
+                ? 'Organization-style JSON-LD detected.'
+                : 'No Organization JSON-LD detected.') +
+              '</p>' +
+              (checks.schema_markup && Object.keys(checks.schema_markup.schema_data || {}).length
+                ? '<pre class="mt-3 max-h-40 overflow-auto rounded-lg border border-zinc-800 bg-zinc-950/80 p-3 font-mono text-[11px] leading-relaxed text-zinc-400">' +
+                  escapeHtml(JSON.stringify(checks.schema_markup.schema_data, null, 2)) +
+                  '</pre>'
+                : ''),
+          },
+          {
+            id: 'check-wd',
+            title: 'Wikidata',
+            status: wd,
+            body:
+              '<p class="text-sm text-zinc-400">' +
+              escapeHtml((checks.wikidata && checks.wikidata.description) || '—') +
+              '</p>' +
+              (checks.wikidata && checks.wikidata.qid
+                ? '<p class="mt-2 font-mono text-xs text-zinc-500">QID: ' + escapeHtml(checks.wikidata.qid) + '</p>'
+                : ''),
+          },
+          {
+            id: 'check-crawl',
+            title: 'Crawlability',
+            status: cr,
+            body:
+              '<p class="text-sm text-zinc-400">' +
+              (cr.detail ? escapeHtml(cr.detail) : 'robots.txt and sitemap signals look acceptable.') +
+              '</p>' +
+              '<p class="mt-2 text-xs text-zinc-600">Crawlable: ' +
+              escapeHtml(String(!!(checks.crawlability && checks.crawlability.crawlable))) +
+              '</p>',
+          },
+        ];
+
+        els.checksAccordion.innerHTML = rows
+          .map(function (r) {
+            return (
+              '<div class="overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/40 transition hover:border-zinc-700">' +
+              '<button type="button" class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium text-white ring-focus rounded-xl" aria-expanded="false" aria-controls="' +
+              r.id +
+              '-panel" id="' +
+              r.id +
+              '-btn">' +
+              '<span class="flex min-w-0 items-center gap-3">' +
+              '<span class="shrink-0 text-base" aria-hidden="true">' +
+              r.status.icon +
+              '</span>' +
+              '<span class="truncate">' +
+              escapeHtml(r.title) +
+              '</span>' +
+              '</span>' +
+              '<span class="inline-flex shrink-0 items-center gap-2">' +
+              '<span class="rounded-lg border px-2 py-0.5 text-xs font-medium ' +
+              toneBadge[r.status.tone] +
+              '">' +
+              escapeHtml(r.status.label) +
+              '</span>' +
+              '<svg class="h-4 w-4 text-zinc-500 transition chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+              '</span>' +
+              '</button>' +
+              '<div id="' +
+              r.id +
+              '-panel" class="hidden border-t border-zinc-800/80 px-4 py-3" role="region">' +
+              r.body +
+              '</div>' +
+              '</div>'
+            );
+          })
+          .join('');
+
+        els.checksAccordion.querySelectorAll('[id$="-btn"]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('aria-controls');
+            var panel = document.getElementById(id);
+            var open = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+            panel.classList.toggle('hidden', open);
+            var chev = btn.querySelector('.chevron');
+            if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+          });
+        });
+      }
+
+      function renderExclusions(points) {
+        points = points || [];
+        if (!points.length) {
+          els.exclusionBadges.innerHTML =
+            '<span class="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">No critical exclusions flagged</span>';
+          return;
+        }
+        els.exclusionBadges.innerHTML = points
+          .map(function (n) {
+            var sev = EXCLUSION_SEVERITY[n] || 'warning';
+            var cls =
+              sev === 'critical'
+                ? 'border-red-500/35 bg-red-500/15 text-red-200'
+                : 'border-amber-500/30 bg-amber-500/10 text-amber-200';
+            var label = EXCLUSION_LABELS[n] || 'Issue ' + n;
+            return (
+              '<span class="inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium ' +
+              cls +
+              '" title="#' +
+              n +
+              '">' +
+              '<span class="mr-1 font-mono text-[10px] opacity-70">#' +
+              n +
+              '</span>' +
+              escapeHtml(label) +
+              '</span>'
+            );
+          })
+          .join('');
+      }
+
+      function renderPlaybook(items) {
+        items = items || [];
+        if (!items.length) {
+          els.playbookList.innerHTML =
+            '<p class="text-sm text-zinc-500">No playbook items — exclusions are clear or scan returned empty playbook.</p>';
+          return;
+        }
+        els.playbookList.innerHTML = items
+          .map(function (card, i) {
+            var prio = escapeHtml(card.priority || '');
+            var prioCls =
+              prio === 'P0'
+                ? 'bg-red-500/15 text-red-200 border-red-500/25'
+                : prio === 'P1'
+                  ? 'bg-amber-500/12 text-amber-200 border-amber-500/25'
+                  : 'bg-zinc-700/50 text-zinc-300 border-zinc-600/40';
+            var actions = (card.actions || [])
+              .map(function (a) {
+                return '<li class="text-sm text-zinc-300">' + escapeHtml(a) + '</li>';
+              })
+              .join('');
+            var cid = 'playbook-card-' + i;
+            return (
+              '<article class="overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/50">' +
+              '<div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">' +
+              '<div class="min-w-0 flex-1">' +
+              '<div class="flex flex-wrap items-center gap-2">' +
+              '<span class="rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase ' +
+              prioCls +
+              '">' +
+              prio +
+              '</span>' +
+              '<span class="font-mono text-[10px] text-zinc-600">#' +
+              escapeHtml(String(card.exclusion)) +
+              '</span>' +
+              '</div>' +
+              '<h3 class="mt-2 text-base font-semibold text-white">' +
+              escapeHtml(card.title || 'Action') +
+              '</h3>' +
+              '<div class="mt-2 flex flex-wrap gap-3 text-xs text-zinc-500">' +
+              '<span><span class="text-zinc-600">Timeline</span> · ' +
+              escapeHtml(card.timeline || '—') +
+              '</span>' +
+              '<span><span class="text-zinc-600">Impact</span> · ' +
+              escapeHtml(card.expected_impact || '—') +
+              '</span>' +
+              '</div>' +
+              '</div>' +
+              '<details class="group border-t border-zinc-800/80">' +
+              '<summary class="cursor-pointer list-none px-4 py-3 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 ring-focus marker:content-none [&::-webkit-details-marker]:hidden">' +
+              '<span class="inline-flex items-center gap-2">' +
+              '<span>Action checklist</span>' +
+              '<svg class="h-4 w-4 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+              '</span>' +
+              '</summary>' +
+              '<div id="' +
+              cid +
+              '" class="border-t border-zinc-800/60 bg-zinc-950/30 px-4 py-3">' +
+              '<ul class="list-inside list-disc space-y-2 pl-1">' +
+              actions +
+              '</ul>' +
+              '</div>' +
+              '</details>' +
+              '</article>'
+            );
+          })
+          .join('');
+      }
+
+      function applyResult(data, skipStorage) {
+        hideError();
+        els.resultsRegion.classList.remove('hidden', 'animate-slide-up');
+        void els.resultsRegion.offsetWidth;
+        els.resultsRegion.classList.add('animate-slide-up');
+
+        var grade = String(data.grade || 'F').toUpperCase().charAt(0);
+        if (!GRADE_STYLES[grade]) grade = 'F';
+
+        els.gradeBadge.textContent = grade;
+        els.gradeBadge.className =
+          'mt-0.5 rounded-md border px-2 py-0.5 text-xs font-semibold ' + gradeStyle(grade).badge;
+
+        els.resultsMeta.textContent = data.scanned_at ? 'Scanned at ' + data.scanned_at : '';
+        els.brandUrlLine.textContent = (data.brand || '') + ' · ' + (data.url || '');
+
+        renderExclusions(data.exclusion_points);
+        renderChecks(data.checks);
+        renderPlaybook(data.playbook);
+
+        animateScore(Number(data.score) || 0, grade, 900);
+
+        if (!skipStorage) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } catch (e) {}
+        }
+      }
+
+      async function postScan(body) {
+        var res = await fetch(API_BASE + '/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(body),
+        });
+        var text = await res.text();
+        var json = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch (e) {
+          json = null;
+        }
+        if (!res.ok) {
+          var detail =
+            json && (json.detail != null)
+              ? String(json.detail)
+              : json && json.error
+                ? String(json.error)
+                : text || res.statusText;
+          var err = new Error(detail);
+          err.status = res.status;
+          err.retryAfter = res.headers.get('Retry-After');
+          throw err;
+        }
+        return json;
+      }
+
+      els.form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        hideError();
+        var brand = els.brand.value.trim();
+        var url = els.url.value.trim();
+        if (!brand || !url) {
+          showError('Please enter both a brand name and a URL.');
+          return;
+        }
+        setLoading(true);
+        try {
+          var data = await postScan({ brand_name: brand, url: url });
+          applyResult(data, false);
+        } catch (err) {
+          var msg = err.message || 'Scan failed.';
+          if (err.status === 429 && err.retryAfter) msg += ' Retry after ~' + err.retryAfter + 's.';
+          showError(msg);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      function renderDemoChips(demos) {
+        els.demoChips.innerHTML = (demos || [])
+          .map(function (d, idx) {
+            return (
+              '<button type="button" class="ring-focus rounded-xl border border-zinc-700/80 bg-zinc-900/60 px-4 py-2.5 text-left text-sm text-zinc-200 transition hover:border-indigo-500/40 hover:bg-zinc-800/80" data-demo-index="' +
+              idx +
+              '">' +
+              '<span class="font-semibold text-white">' +
+              escapeHtml(d.brand) +
+              '</span>' +
+              '<span class="mt-0.5 block font-mono text-[11px] text-zinc-500">' +
+              escapeHtml(d.url) +
+              '</span>' +
+              '</button>'
+            );
+          })
+          .join('');
+
+        els.demoChips.querySelectorAll('[data-demo-index]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var i = parseInt(btn.getAttribute('data-demo-index'), 10);
+            var d = demos[i];
+            if (!d) return;
+            els.brand.value = d.brand || '';
+            els.url.value = d.url || '';
+            applyResult(d, true);
+            els.resultsRegion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        });
+      }
+
+      async function loadDemos() {
+        try {
+          var res = await fetch(API_BASE + '/demo-brands', { headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error('Demo brands unavailable');
+          var demos = await res.json();
+          renderDemoChips(Array.isArray(demos) ? demos : []);
+        } catch (e) {
+          els.demoChips.innerHTML =
+            '<p class="text-sm text-zinc-500">Could not load demos. Start the API and refresh.</p>';
+        }
+      }
+
+      function restoreLastScan() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          var data = JSON.parse(raw);
+          if (!data || typeof data !== 'object') return;
+          els.brand.value = data.brand || '';
+          els.url.value = data.url || '';
+          applyResult(data, true);
+        } catch (e) {}
+      }
+
+      restoreLastScan();
+      loadDemos();
+    })();
+  </script>
+</body>
+</html>

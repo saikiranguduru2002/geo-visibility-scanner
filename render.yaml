@@ -1,0 +1,23 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Free web service: https://render.com/docs/free
+#
+# Free instance (typical):
+# - Shared CPU, 512 MB RAM
+# - Spins down after ~15 minutes of inactivity; first request can be slow (cold start)
+# - 750 free instance hours per month per workspace (enough for one 24/7 free service)
+# - No persistent disk; filesystem is ephemeral between deploys
+#
+# After first deploy, set GOOGLE_KG_API_KEY in the Render Dashboard (this file uses sync: false).
+
+services:
+  - type: web
+    name: geo-scanner
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: GOOGLE_KG_API_KEY
+        sync: false
